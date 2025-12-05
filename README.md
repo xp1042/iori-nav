@@ -52,9 +52,11 @@
 
 ### 步骤 1: Fork 本仓库
 [![Fork on GitHub](https://img.shields.io/badge/Fork-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/jy02739244/iori-nav/fork)
+
  **Fork 项目**: 点击上方"Fork on GitHub"按钮，，并点上 Star !!!
 ### 步骤 2: 部署到Cloudflare Pages
 [![Deploy to Cloudflare Pages](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://dash.cloudflare.com/?to=/:account/pages/new/provider/github)
+
 点击上方"DEPLOY  CLOUDFLARE PAGES"按钮,跳转到Cloudflare，然后选连接到Github，授权后选择刚才fork的项目
 
 <img width="2252" height="1380" alt="image" src="https://github.com/user-attachments/assets/0588e0d0-befb-4962-b422-922a8c895674" />
