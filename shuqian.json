@@ -1,0 +1,718 @@
+{
+  "category": [
+    {
+      "id": 1,
+      "catelog": "常用推荐",
+      "sort_order": 0
+    },
+    {
+      "id": 2,
+      "catelog": "人工智能",
+      "sort_order": 1
+    },
+    {
+      "id": 3,
+      "catelog": "开发工具",
+      "sort_order": 2
+    },
+    {
+      "id": 4,
+      "catelog": "Cloudflare",
+      "sort_order": 3
+    },
+    {
+      "id": 9,
+      "catelog": "在线工具",
+      "sort_order": 4
+    },
+    {
+      "id": 11,
+      "catelog": "论坛",
+      "sort_order": 5
+    },
+    {
+      "id": 5,
+      "catelog": "域名管理",
+      "sort_order": 6
+    },
+    {
+      "id": 6,
+      "catelog": "VPS",
+      "sort_order": 7
+    },
+    {
+      "id": 7,
+      "catelog": "容器平台",
+      "sort_order": 8
+    },
+    {
+      "id": 8,
+      "catelog": "影视资源",
+      "sort_order": 9
+    },
+    {
+      "id": 10,
+      "catelog": "接码平台",
+      "sort_order": 10
+    }
+  ],
+  "sites": [
+    {
+      "id": 21,
+      "name": "1024tools",
+      "url": "https://1024tools.com/",
+      "logo": "https://1024tools.com/favicon.ico",
+      "desc": "在线工具集，提供文本、图像、音频等多种处理功能，方便快捷。",
+      "catelog_id": 9,
+      "sort_order": 0
+    },
+    {
+      "id": 35,
+      "name": "JSON在线解析",
+      "url": "https://www.json.cn/",
+      "logo": "https://static.json.cn/r/img/favicon/favicon.ico",
+      "desc": "JSON在线解析工具，支持格式化、校验和转换JSON数据。",
+      "catelog_id": 9,
+      "sort_order": 1
+    },
+    {
+      "id": 2,
+      "name": "IP 哨兵",
+      "url": "https://ip.661388.xyz/",
+      "logo": "https://img.icons8.com/?size=100&id=Wc9w69haClbb&format=png&color=000000",
+      "desc": "IP 哨兵：实时监控和分析 IP 地址的工具。",
+      "catelog_id": 4,
+      "sort_order": 2
+    },
+    {
+      "id": 39,
+      "name": "CTool工具",
+      "url": "https://ctool.dev/",
+      "logo": "https://favicon.im/ctool.dev?larger=true",
+      "desc": "多功能在线工具平台",
+      "catelog_id": 9,
+      "sort_order": 2
+    },
+    {
+      "id": 34,
+      "name": "obfuscator",
+      "url": "https://obfuscator.io/",
+      "logo": "https://favicon.im/obfuscator.io?larger=true",
+      "desc": "在线工具，快速混淆和保护JavaScript代码，防止反编译和盗用。",
+      "catelog_id": 9,
+      "sort_order": 3
+    },
+    {
+      "id": 36,
+      "name": "地址生成器",
+      "url": "https://www.meiguodizhi.com/",
+      "logo": "https://static11.meiguodizhi.com/favicon.ico",
+      "desc": "美国地址生成器，随机生成真实的美国地址，适用于各种测试需求。",
+      "catelog_id": 9,
+      "sort_order": 4
+    },
+    {
+      "id": 5,
+      "name": "哪吒面板",
+      "url": "https://veyvwiviswug.ap-southeast-1.clawcloudrun.com/",
+      "logo": "https://veyvwiviswug.ap-southeast-1.clawcloudrun.com/apple-touch-icon.png",
+      "desc": "哪吒面板：一款基于云的服务器管理工具，提供一站式监控与运维。",
+      "catelog_id": 3,
+      "sort_order": 5
+    },
+    {
+      "id": 37,
+      "name": "itdog",
+      "url": "https://www.itdog.cn/",
+      "logo": "https://www.itdog.cn/favicon.ico",
+      "desc": "IT技术资讯与教程，涵盖编程、网络安全、云计算等领域。",
+      "catelog_id": 9,
+      "sort_order": 5
+    },
+    {
+      "id": 6,
+      "name": "Komari监控",
+      "url": "https://komari.iori.pp.ua/",
+      "logo": "https://favicon.im/komari.iori.pp.ua?larger=true",
+      "desc": "实时监控 Komari 服务器状态和错误日志，实时推送到指定邮箱或 webhook。",
+      "catelog_id": 3,
+      "sort_order": 6
+    },
+    {
+      "id": 8,
+      "name": "ChatGPT",
+      "url": "https://chatgpt.com",
+      "logo": "https://favicon.im/chatgpt.com?larger=true",
+      "desc": "ChatGPT是一个人工智能语言模型，可以帮助用户生成文本、回答问题、翻译文本等。",
+      "catelog_id": 2,
+      "sort_order": 8
+    },
+    {
+      "id": 9,
+      "name": "Perplexity AI",
+      "url": "https://www.perplexity.ai/",
+      "logo": "https://icon.iori.nyc.mn?url=www.perplexity.ai",
+      "desc": "Perplexity AI：智能搜索助手，提供答案和来源。",
+      "catelog_id": 2,
+      "sort_order": 9
+    },
+    {
+      "id": 10,
+      "name": "Gemini",
+      "url": "https://gemini.google.com",
+      "logo": "https://icon.iori.nyc.mn?url=gemini.google.com",
+      "desc": "Google Gemini 是一款先进的人工智能助手，提供多种智能服务和应用。",
+      "catelog_id": 2,
+      "sort_order": 10
+    },
+    {
+      "id": 11,
+      "name": "MoonTV",
+      "url": "https://moontv.661388.xyz/",
+      "logo": "https://favicon.im/moontv.661388.xyz?larger=true",
+      "desc": "免费在线电视平台，提供多语种高清直播和VOD内容。",
+      "catelog_id": 8,
+      "sort_order": 11
+    },
+    {
+      "id": 12,
+      "name": "Vercel",
+      "url": "https://vercel.com/",
+      "logo": "https://favicon.im/vercel.com?larger=true",
+      "desc": "Vercel 是一个前端框架和静态网站托管平台，支持快速部署和无服务器函数。",
+      "catelog_id": 3,
+      "sort_order": 12
+    },
+    {
+      "id": 15,
+      "name": "Google Cloud 控制台",
+      "url": "https://console.cloud.google.com",
+      "logo": "https://favicon.im/console.cloud.google.com?larger=true",
+      "desc": "谷歌云控制台",
+      "catelog_id": 6,
+      "sort_order": 15
+    },
+    {
+      "id": 18,
+      "name": "Zeabur",
+      "url": "https://zeabur.com/",
+      "logo": "https://zeabur.com/logo.svg",
+      "desc": "Zeabur是一个在线笔记和知识管理工具，支持Markdown编辑和协作功能。",
+      "catelog_id": 7,
+      "sort_order": 18
+    },
+    {
+      "id": 19,
+      "name": "Gmail",
+      "url": "https://mail.google.com/mail/u/0/#inbox",
+      "logo": "https://icon.iori.nyc.mn/?url=mail.google.com",
+      "desc": "访问Google邮箱，管理收件箱和电子邮件。",
+      "catelog_id": 1,
+      "sort_order": 19
+    },
+    {
+      "id": 20,
+      "name": "outlook",
+      "url": "https://outlook.live.com/mail/0/",
+      "logo": "https://outlook.live.com/mail/favicon.ico",
+      "desc": "访问Outlook邮箱，管理电子邮件和日历。",
+      "catelog_id": 1,
+      "sort_order": 20
+    },
+    {
+      "id": 95,
+      "name": "百度",
+      "url": "https://www.baidu.com/",
+      "logo": "https://favicon.im/www.baidu.com?larger=true",
+      "desc": "全球最大的中文搜索引擎",
+      "catelog_id": 1,
+      "sort_order": 9999
+    },
+    {
+      "id": 94,
+      "name": "NodeSeek",
+      "url": "https://www.nodeseek.com",
+      "logo": "https://favicon.im/www.nodeseek.com?larger=true",
+      "desc": "NodeSeek社区交流平台",
+      "catelog_id": 11,
+      "sort_order": 9999
+    },
+    {
+      "id": 93,
+      "name": "MJJBox资源",
+      "url": "https://mjjbox.com/",
+      "logo": "https://favicon.im/mjjbox.com?larger=true",
+      "desc": "MJJBox资源分享平台",
+      "catelog_id": 11,
+      "sort_order": 9999
+    },
+    {
+      "id": 92,
+      "name": "NodeLoc",
+      "url": "https://nodeloc.com/",
+      "logo": "https://favicon.im/nodeloc.com?larger=true",
+      "desc": "NodeLoc服务器托管与网络解决方案",
+      "catelog_id": 11,
+      "sort_order": 9999
+    },
+    {
+      "id": 91,
+      "name": "LinuxDo",
+      "url": "https://linux.do",
+      "logo": "https://favicon.im/linux.do?larger=true",
+      "desc": "Linux学习社区与教程分享平台",
+      "catelog_id": 11,
+      "sort_order": 9999
+    },
+    {
+      "id": 90,
+      "name": "I8 CLOUD",
+      "url": "https://nic.gv.uy/",
+      "logo": "https://favicon.im/nic.gv.uy?larger=true",
+      "desc": "I8 CLOUD：乌拉圭政府域名注册服务。",
+      "catelog_id": 5,
+      "sort_order": 9999
+    },
+    {
+      "id": 23,
+      "name": "LotHelper",
+      "url": "https://www.lothelper.com/cn/shownumber",
+      "logo": "https://www.lothelper.com/image/favicon.png",
+      "desc": "提供多国临时号码用于在线接收短信",
+      "catelog_id": 10,
+      "sort_order": 9999
+    },
+    {
+      "id": 24,
+      "name": "mianfeijiema",
+      "url": "https://mianfeijiema.com/",
+      "logo": "https://mianfeijiema.com/static/picture/logo.png",
+      "desc": "提供临时手机号用于接收短信和激活",
+      "catelog_id": 10,
+      "sort_order": 9999
+    },
+    {
+      "id": 25,
+      "name": "5sim",
+      "url": "https://5sim.net/",
+      "logo": "https://5sim.net/favicon-32x32.png",
+      "desc": "提供临时手机号用于接收短信和激活",
+      "catelog_id": 10,
+      "sort_order": 9999
+    },
+    {
+      "id": 26,
+      "name": "clearcode",
+      "url": "https://clearcode.cn/",
+      "logo": "https://clearcode.cn/static/tw/logo.png",
+      "desc": "在线接收短信验证码的虚拟号码平台",
+      "catelog_id": 10,
+      "sort_order": 9999
+    },
+    {
+      "id": 27,
+      "name": "ZoneABC",
+      "url": "https://zoneabc.net/dashboard",
+      "logo": "https://zoneabc.net/logo.svg",
+      "desc": "ZoneABC域名管理",
+      "catelog_id": 5,
+      "sort_order": 9999
+    },
+    {
+      "id": 28,
+      "name": "Kimi",
+      "url": "https://www.kimi.com/",
+      "logo": "https://statics.moonshot.cn/kimi-web-seo/favicon.ico",
+      "desc": "kimi Ai",
+      "catelog_id": 2,
+      "sort_order": 9999
+    },
+    {
+      "id": 29,
+      "name": "receive-sms",
+      "url": "https://receive-sms-online.info/",
+      "logo": "https://receive-sms-online.info/favicon.ico",
+      "desc": "免费在线接码",
+      "catelog_id": 10,
+      "sort_order": 9999
+    },
+    {
+      "id": 30,
+      "name": "smsonline",
+      "url": "https://www.smsonline.cloud/zh",
+      "logo": "https://www.smsonline.cloud/favicon.ico",
+      "desc": "全球领先的云存储平台，提供安全、可靠、易用的存储服务，支持文件共享、协作和数据同步。",
+      "catelog_id": 10,
+      "sort_order": 9999
+    },
+    {
+      "id": 31,
+      "name": "sms-activate",
+      "url": "https://sms-activate.io/cn/freeNumbers",
+      "logo": "https://smsactivate.s3.eu-central-1.amazonaws.com/assets/img/activate_favicon32.png",
+      "desc": "免费虚拟号码",
+      "catelog_id": 10,
+      "sort_order": 9999
+    },
+    {
+      "id": 32,
+      "name": "smser",
+      "url": "https://smser.net/",
+      "logo": "https://smser.net/img/smser.net/favicon.ico?v=1.2",
+      "desc": "免费在线接码",
+      "catelog_id": 10,
+      "sort_order": 9999
+    },
+    {
+      "id": 33,
+      "name": "temp-number",
+      "url": "https://temp-number.com/",
+      "logo": "https://temp-number.com/img/favicon.ico",
+      "desc": "免费接码",
+      "catelog_id": 10,
+      "sort_order": 9999
+    },
+    {
+      "id": 38,
+      "name": "NorthFlank",
+      "url": "https://northflank.com/",
+      "logo": "https://northflank.com/favicon.ico",
+      "desc": "Northflank 容器",
+      "catelog_id": 7,
+      "sort_order": 9999
+    },
+    {
+      "id": 40,
+      "name": "无损音乐下载",
+      "url": "https://flac.music.hi.cn/",
+      "logo": "https://flac.music.hi.cn/static/img/logo.png",
+      "desc": "无损音乐下载",
+      "catelog_id": 8,
+      "sort_order": 9999
+    },
+    {
+      "id": 41,
+      "name": "cto.new",
+      "url": "https://cto.new/",
+      "logo": "https://cto.new/favicon.ico",
+      "desc": "AI code agent",
+      "catelog_id": 2,
+      "sort_order": 9999
+    },
+    {
+      "id": 42,
+      "name": "热播之家",
+      "url": "https://www.rebozj.pro/",
+      "logo": "https://www.rebozj.pro/template/jianhei/statics/img/favicon.png",
+      "desc": "热播之家",
+      "catelog_id": 8,
+      "sort_order": 9999
+    },
+    {
+      "id": 43,
+      "name": "4K影视",
+      "url": "https://www.4kvm.tv/",
+      "logo": "https://www.4kvm.tv/wp-content/uploads/2020/07/c4b7f67bdfbd37.png",
+      "desc": "4K影视",
+      "catelog_id": 8,
+      "sort_order": 9999
+    },
+    {
+      "id": 45,
+      "name": "厂长资源",
+      "url": "https://www.cz4k.com/",
+      "logo": "https://cf.hbcn.fun/wp-content/uploads/2021/10/5c7a67356cec28.ico",
+      "desc": "厂长资源",
+      "catelog_id": 8,
+      "sort_order": 9999
+    },
+    {
+      "id": 46,
+      "name": "影猫仓库",
+      "url": "https://www.ymck.pro/",
+      "logo": "https://www.ymck.pro/upload/site/20230825-1/5c00fbcfb4ff0737d3c8320d30b2d1de.png",
+      "desc": "影猫仓库",
+      "catelog_id": 8,
+      "sort_order": 9999
+    },
+    {
+      "id": 48,
+      "name": "来看点播",
+      "url": "https://lkvod.com/",
+      "logo": "https://lkvod.com/upload/site/20241223-1/eb0f19bab937f4f3da69d1fa2b7c516c.png",
+      "desc": "来看点播",
+      "catelog_id": 8,
+      "sort_order": 9999
+    },
+    {
+      "id": 49,
+      "name": "修罗影视",
+      "url": "https://xl01.com.de/",
+      "logo": "https://xl01.com.de/images/favicon.png",
+      "desc": "修罗影视",
+      "catelog_id": 8,
+      "sort_order": 9999
+    },
+    {
+      "id": 50,
+      "name": "Railway",
+      "url": "https://railway.com/",
+      "logo": "https://railway.com/favicons/favicon-light.ico",
+      "desc": "railway 容器",
+      "catelog_id": 7,
+      "sort_order": 9999
+    },
+    {
+      "id": 51,
+      "name": "ClawCloud",
+      "url": "https://ap-southeast-1.run.claw.cloud/",
+      "logo": "https://ap-southeast-1.run.claw.cloud/icons/icon-512x512.png",
+      "desc": "ClawCloud 容器",
+      "catelog_id": 7,
+      "sort_order": 9999
+    },
+    {
+      "id": 52,
+      "name": "Koyeb",
+      "url": "https://www.koyeb.com/",
+      "logo": "https://www.koyeb.com/favicon/favicon.ico",
+      "desc": "koyeb 容器",
+      "catelog_id": 7,
+      "sort_order": 9999
+    },
+    {
+      "id": 53,
+      "name": "Hugging Face",
+      "url": "https://huggingface.co/",
+      "logo": "https://huggingface.co/front/assets/huggingface_logo-noborder.svg",
+      "desc": "Hugging Face 容器",
+      "catelog_id": 7,
+      "sort_order": 9999
+    },
+    {
+      "id": 54,
+      "name": "Youtube",
+      "url": "https://www.youtube.com",
+      "logo": "https://favicon.im/www.youtube.com?larger=true",
+      "desc": "Youtube 视频",
+      "catelog_id": 1,
+      "sort_order": 9999
+    },
+    {
+      "id": 55,
+      "name": "网易邮箱",
+      "url": "https://mail.163.com/",
+      "logo": "https://mail.163.com/favicon.ico",
+      "desc": "网易163邮箱",
+      "catelog_id": 1,
+      "sort_order": 9999
+    },
+    {
+      "id": 56,
+      "name": "Grok",
+      "url": "https://grok.com",
+      "logo": "https://icon.iori.nyc.mn/?url=grok.com",
+      "desc": "Grok Ai",
+      "catelog_id": 2,
+      "sort_order": 9999
+    },
+    {
+      "id": 57,
+      "name": "ollama",
+      "url": "https://ollama.com/settings",
+      "logo": "https://ollama.com/public/icon-32x32.png",
+      "desc": "Chat & build with open models",
+      "catelog_id": 2,
+      "sort_order": 9999
+    },
+    {
+      "id": 59,
+      "name": "通义千问",
+      "url": "https://www.qianwen.com/",
+      "logo": "https://img.alicdn.com/imgextra/i2/O1CN01FPcQDy1WTPjPX6IH9_!!6000000002789-2-tps-96-96.png",
+      "desc": "千问-Qwen最新模型",
+      "catelog_id": 2,
+      "sort_order": 9999
+    },
+    {
+      "id": 60,
+      "name": "Microsoft Copilot",
+      "url": "https://copilot.microsoft.com/",
+      "logo": "https://copilot.microsoft.com/static/cmc/favicon.svg",
+      "desc": "微软Copilot Ai",
+      "catelog_id": 2,
+      "sort_order": 9999
+    },
+    {
+      "id": 61,
+      "name": "netassist",
+      "url": "https://tb.netassist.ua/",
+      "logo": "https://tunnelbroker.net/favicon.ico",
+      "desc": "ip6.arpa域名管理",
+      "catelog_id": 5,
+      "sort_order": 9999
+    },
+    {
+      "id": 62,
+      "name": "tunnelbroker",
+      "url": "https://tunnelbroker.net/",
+      "logo": "https://tunnelbroker.net/favicon.ico",
+      "desc": "ip6.arpa域名管理",
+      "catelog_id": 5,
+      "sort_order": 9999
+    },
+    {
+      "id": 63,
+      "name": "Netlibre",
+      "url": "https://www.netlib.re/",
+      "logo": "https://favicon.im/www.netlib.re?larger=true",
+      "desc": "netlib.re域名管理",
+      "catelog_id": 5,
+      "sort_order": 9999
+    },
+    {
+      "id": 65,
+      "name": "Spaceship",
+      "url": "https://www.spaceship.com/",
+      "logo": "https://spaceship-cdn.com/static/spaceship/favicon/spaceship-favicon.ico",
+      "desc": "xyz域名管理",
+      "catelog_id": 5,
+      "sort_order": 9999
+    },
+    {
+      "id": 66,
+      "name": "镜像加速Hub",
+      "url": "https://hub.661388.xyz/",
+      "logo": "https://hub.661388.xyz/favicon.ico",
+      "desc": "Github和Docker镜像加速",
+      "catelog_id": 3,
+      "sort_order": 9999
+    },
+    {
+      "id": 67,
+      "name": "Webssh",
+      "url": "https://webssh.661388.xyz/",
+      "logo": "https://webssh.661388.xyz/static/img/favicon.ico",
+      "desc": "Webssh快速连接",
+      "catelog_id": 3,
+      "sort_order": 9999
+    },
+    {
+      "id": 68,
+      "name": "Cloudflare",
+      "url": "https://dash.cloudflare.com/",
+      "logo": "https://dash.cloudflare.com/favicon.ico",
+      "desc": "Cloudflare用户界面，管理网站安全和性能。",
+      "catelog_id": 3,
+      "sort_order": 9999
+    },
+    {
+      "id": 69,
+      "name": "GitHub",
+      "url": "https://github.com",
+      "logo": "https://github.com/favicon.ico",
+      "desc": "代码托管平台",
+      "catelog_id": 3,
+      "sort_order": 9999
+    },
+    {
+      "id": 70,
+      "name": "Euserv",
+      "url": "https://support.euserv.com/",
+      "logo": "https://support.euserv.com/pic/euserv_logo_118x80.gif",
+      "desc": "德鸡管理",
+      "catelog_id": 6,
+      "sort_order": 9999
+    },
+    {
+      "id": 71,
+      "name": "MJJVM | 云服务器",
+      "url": "https://www.mjjvm.com/service?groupid=305",
+      "logo": "https://www.mjjvm.com/upload/logo-colours.png",
+      "desc": "MJJVM云服务器，提供稳定可靠的云服务。",
+      "catelog_id": 6,
+      "sort_order": 9999
+    },
+    {
+      "id": 72,
+      "name": "蛋蛋云",
+      "url": "https://dandan.nyc.mn",
+      "logo": "https://favicon.im/dandan.nyc.mn?larger=true",
+      "desc": "蛋蛋云VPS",
+      "catelog_id": 6,
+      "sort_order": 9999
+    },
+    {
+      "id": 73,
+      "name": "Dpdns域名",
+      "url": "https://dash.domain.digitalplat.org",
+      "logo": "https://icon.iori.nyc.mn/?url=domain.digitalplat.org",
+      "desc": "Dpdns域名管理",
+      "catelog_id": 5,
+      "sort_order": 9999
+    },
+    {
+      "id": 74,
+      "name": "pp.ua域名",
+      "url": "https://nic.ua/en",
+      "logo": "https://nic.ua/favicon.ico?version=v350",
+      "desc": "pp.ua域名管理",
+      "catelog_id": 5,
+      "sort_order": 9999
+    },
+    {
+      "id": 75,
+      "name": "NYC域名",
+      "url": "https://dash.publiczone.org/",
+      "logo": "https://publiczone.org/assets/images/favicon/favicon.svg",
+      "desc": "nyc.mn域名管理",
+      "catelog_id": 5,
+      "sort_order": 9999
+    },
+    {
+      "id": 76,
+      "name": "DNSHE",
+      "url": "https://my.dnshe.com/index.php?m=domain_hub",
+      "logo": "https://my.dnshe.com/favicon.ico",
+      "desc": "DNSHE免费域名管理平台",
+      "catelog_id": 5,
+      "sort_order": 9999
+    },
+    {
+      "id": 77,
+      "name": "自动SSL证书",
+      "url": "https://ssl.b.a.f.e.0.7.4.0.1.0.0.2.ip6.arpa/",
+      "logo": "https://tunnelbroker.net/favicon.ico",
+      "desc": "SSL证书自动生成",
+      "catelog_id": 4,
+      "sort_order": 9999
+    },
+    {
+      "id": 80,
+      "name": "GitHub 文件加速",
+      "url": "https://github.iori4.pp.ua/",
+      "logo": "https://github.iori4.pp.ua/favicon.ico",
+      "desc": "Github文件加速",
+      "catelog_id": 4,
+      "sort_order": 9999
+    },
+    {
+      "id": 86,
+      "name": "Check ProxyIP - 代理IP检测服务",
+      "url": "https://check.iori3.pp.ua/",
+      "logo": "https://img.icons8.com/?size=100&id=11221&format=png&color=000000",
+      "desc": "Check ProxyIP - 代理IP检测服务",
+      "catelog_id": 4,
+      "sort_order": 9999
+    },
+    {
+      "id": 87,
+      "name": "在线订阅转换工具",
+      "url": "https://sub.iori2.dpdns.org/",
+      "logo": "https://img.icons8.com/?size=100&id=9917&format=png&color=000000",
+      "desc": "在线订阅转换工具，轻松转换各种订阅链接。",
+      "catelog_id": 4,
+      "sort_order": 9999
+    }
+  ]
+}
