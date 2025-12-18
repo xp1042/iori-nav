@@ -1,3 +1,6 @@
+// functions/index.js
+import { isAdminAuthenticated } from './_middleware';
+
 // 辅助函数
 function escapeHTML(str) {
   if (!str) return '';
@@ -36,7 +39,6 @@ let indexesChecked = false;
 
 export async function onRequest(context) {
   const { request, env } = context;
-  
   // 自动确保索引存在（每个 Worker 实例只执行一次）
   if (!indexesChecked) {
     try {
@@ -44,14 +46,26 @@ export async function onRequest(context) {
         env.NAV_DB.prepare("CREATE INDEX IF NOT EXISTS idx_sites_catelog_id ON sites(catelog_id)"),
         env.NAV_DB.prepare("CREATE INDEX IF NOT EXISTS idx_sites_sort_order ON sites(sort_order)")
       ]);
+      
+      // 检查并添加 is_private 字段
+      try {
+          await env.NAV_DB.prepare("SELECT is_private FROM sites LIMIT 1").first();
+      } catch (e) {
+          await env.NAV_DB.prepare("ALTER TABLE sites ADD COLUMN is_private INTEGER DEFAULT 0").run();
+      }
+
       indexesChecked = true;
     } catch (e) {
-      console.error('Failed to ensure indexes:', e);
+      console.error('Failed to ensure indexes or columns:', e);
     }
   }
 
   const url = new URL(request.url);
   const catalog = url.searchParams.get('catalog');
+
+  // 检查管理员权限
+  const isAuthenticated = await isAdminAuthenticated(request, env);
+  const includePrivate = isAuthenticated ? 1 : 0;
 
   // 1. 从数据库获取站点数据
   let sites = [];
@@ -59,8 +73,9 @@ export async function onRequest(context) {
     const { results } = await env.NAV_DB.prepare(
       `SELECT s.*,c.catelog FROM sites s
                  INNER JOIN category c ON s.catelog_id = c.id
+                 WHERE (s.is_private = 0 OR ? = 1)
                  ORDER BY s.sort_order ASC, s.create_time DESC `
-    ).all();
+    ).bind(includePrivate).all();
     sites = results;
   } catch (e) {
     return new Response(`Failed to fetch data: ${e.message}`, { status: 500 });
@@ -459,10 +474,17 @@ export async function onRequest(context) {
       sidebarToggleClass = '!hidden'; // Toggle hidden on 550px+
       mobileToggleVisibilityClass = 'min-[550px]:hidden';
       
-      // GitHub Icon for Desktop (Horizontal Layout)
+      // GitHub 图标 (横向布局) - 恢复为跳转 GitHub
       githubIconHtml = `
-      <a href="https://slink.661388.xyz/iori-nav" target="_blank" class="fixed top-4 left-4 z-50 hidden min-[550px]:flex items-center justify-center p-2 rounded-lg bg-white/80 backdrop-blur shadow-md hover:bg-white text-gray-700 hover:text-black transition-all">
+      <a href="https://slink.661388.xyz/iori-nav" target="_blank" class="fixed top-4 left-4 z-50 hidden min-[550px]:flex items-center justify-center p-2 rounded-lg bg-white/80 backdrop-blur shadow-md hover:bg-white text-gray-700 hover:text-black transition-all" title="GitHub">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
+      </a>
+      `;
+      
+      // 后台管理图标 (横向布局) - 放置在右上角，样式与 GitHub 图标一致
+      const adminIconHtml = `
+      <a href="/admin" target="_blank" class="fixed top-4 right-4 z-50 hidden min-[550px]:flex items-center justify-center p-2 rounded-lg bg-white/80 backdrop-blur shadow-md hover:bg-white text-gray-700 hover:text-primary-600 transition-all" title="后台管理">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M7 18a5 5 0 0 1 10 0"/></path></svg>
       </a>
       `;
 
@@ -470,7 +492,8 @@ export async function onRequest(context) {
         <div class="min-[550px]:hidden">
             ${verticalHeaderContent}
         </div>
-        <div class="hidden min-[550px]:block relative">
+        <div class="hidden min-[550px]:block">
+            ${adminIconHtml}
             ${horizontalHeaderContent}
         </div>
       `;

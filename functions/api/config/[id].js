@@ -26,13 +26,14 @@ export async function onRequestPut(context) {
   
   try {
     const config = await request.json();
-    const { name, url, logo, desc, catelog_id, sort_order } = config;
+    const { name, url, logo, desc, catelog_id, sort_order, is_private } = config;
 
     const sanitizedName = (name || '').trim();
     const sanitizedUrl = (url || '').trim();
     let sanitizedLogo = (logo || '').trim() || null;
     const sanitizedDesc = (desc || '').trim() || null;
     const sortOrderValue = normalizeSortOrder(sort_order);
+    const isPrivateValue = is_private ? 1 : 0;
 
     if (!sanitizedName || !sanitizedUrl || !catelog_id) {
       return errorResponse('Name, URL and Catelog are required', 400);
@@ -51,9 +52,9 @@ export async function onRequestPut(context) {
 
     const update = await env.NAV_DB.prepare(`
       UPDATE sites
-      SET name = ?, url = ?, logo = ?, desc = ?, catelog_id = ?, sort_order = ?, update_time = CURRENT_TIMESTAMP
+      SET name = ?, url = ?, logo = ?, desc = ?, catelog_id = ?, sort_order = ?, is_private = ?, update_time = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, catelog_id, sortOrderValue, id).run();
+    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, catelog_id, sortOrderValue, isPrivateValue, id).run();
 
     return jsonResponse({
       code: 200,

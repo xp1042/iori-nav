@@ -13,9 +13,17 @@ export async function onRequestGet(context) {
         env.NAV_DB.prepare("CREATE INDEX IF NOT EXISTS idx_sites_catelog_id ON sites(catelog_id)"),
         env.NAV_DB.prepare("CREATE INDEX IF NOT EXISTS idx_sites_sort_order ON sites(sort_order)")
       ]);
+      
+      // 检查并添加 is_private 字段
+      try {
+          await env.NAV_DB.prepare("SELECT is_private FROM sites LIMIT 1").first();
+      } catch (e) {
+          await env.NAV_DB.prepare("ALTER TABLE sites ADD COLUMN is_private INTEGER DEFAULT 0").run();
+      }
+
       indexesChecked = true;
     } catch (e) {
-      console.error('Failed to ensure indexes:', e);
+      console.error('Failed to ensure indexes or columns:', e);
       // 继续执行，不要因为索引创建失败而阻塞主逻辑
     }
   }
@@ -29,56 +37,42 @@ export async function onRequestGet(context) {
   const keyword = url.searchParams.get('keyword');
   const offset = (page - 1) * pageSize;
 
+  const isAuthenticated = await isAdminAuthenticated(request, env);
+  const includePrivate = isAuthenticated ? 1 : 0;
+
   try {
-    let query = `SELECT s.*,c.catelog FROM sites s
-                 INNER JOIN category c ON s.catelog_id = c.id
-                 ORDER BY s.sort_order ASC, s.create_time DESC LIMIT ? OFFSET ? `;
-    let countQuery = 'SELECT COUNT(*) as total FROM sites';
-    let queryBindParams = [pageSize, offset];
-    let countQueryParams = [];
+    // 基础查询：关联 sites 和 category
+    // 注意：始终筛选 (is_private = 0 OR includePrivate = 1)
+    let queryBase = `FROM sites s INNER JOIN category c ON s.catelog_id = c.id WHERE (s.is_private = 0 OR ? = 1)`;
+    let queryBindParams = [includePrivate];
 
     if (catalogId) {
-      query = `SELECT s.*,c.catelog FROM sites s
-               INNER JOIN category c ON s.catelog_id = c.id
-               WHERE s.catelog_id = ? ORDER BY s.sort_order ASC, s.create_time DESC LIMIT ? OFFSET ?`;
-      countQuery = `SELECT COUNT(*) as total FROM sites WHERE catelog_id = ?`;
-      queryBindParams = [catalogId, pageSize, offset];
-      countQueryParams = [catalogId];
+      queryBase += ` AND s.catelog_id = ?`;
+      queryBindParams.push(catalogId);
     } else if (catalog) {
-      console.log('catalog', catalog);
-      query = `SELECT s.*,c.catelog FROM sites s
-               INNER JOIN category c ON s.catelog_id = c.id
-               WHERE c.catelog = ? ORDER BY s.sort_order ASC, s.create_time DESC LIMIT ? OFFSET ?`;
-      countQuery = `SELECT COUNT(*) as total FROM sites s 
-                    INNER JOIN category c ON s.catelog_id = c.id 
-                    WHERE c.catelog = ?`;
-      queryBindParams = [catalog, pageSize, offset];
-      countQueryParams = [catalog];
+      queryBase += ` AND c.catelog = ?`;
+      queryBindParams.push(catalog);
     }
 
     if (keyword) {
-      const likeKeyword = `%${keyword}%`;
-      query = `SELECT s.*,c.catelog FROM sites s
-               INNER JOIN category c ON s.catelog_id = c.id
-               WHERE s.name LIKE ? OR s.url LIKE ? OR c.catelog LIKE ?
-               ORDER BY s.sort_order ASC, s.create_time DESC LIMIT ? OFFSET ?`;
-      countQuery = `SELECT COUNT(*) as total FROM sites s
-                    INNER JOIN category c ON s.catelog_id = c.id
-                    WHERE s.name LIKE ? OR s.url LIKE ? OR c.catelog LIKE ?`;
-      queryBindParams = [likeKeyword, likeKeyword, likeKeyword, pageSize, offset];
-      countQueryParams = [likeKeyword, likeKeyword, likeKeyword];
-
+      queryBase += ` AND (s.name LIKE ? OR s.url LIKE ? OR c.catelog LIKE ?)`;
+      queryBindParams.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
     }
 
-    const { results } = await env.NAV_DB.prepare(query).bind(...queryBindParams).all();
+    const query = `SELECT s.*, c.catelog ${queryBase} ORDER BY s.sort_order ASC, s.create_time DESC LIMIT ? OFFSET ?`;
+    const countQuery = `SELECT COUNT(*) as total ${queryBase}`;
+    
+    // 添加分页参数
+    const fullBindParams = [...queryBindParams, pageSize, offset];
+
+    const { results } = await env.NAV_DB.prepare(query).bind(...fullBindParams).all();
     
     // 优化：如果 pageSize 很大（通常是“获取全部”场景），则跳过 COUNT 查询
-    // 这种情况下，客户端通常不需要精确的总数来进行分页
     let total = 0;
     if (pageSize >= 1000) {
-        total = results.length + offset; // 返回当前页结果数加上偏移量
+        total = results.length + offset; 
     } else {
-        const countResult = await env.NAV_DB.prepare(countQuery).bind(...countQueryParams).first();
+        const countResult = await env.NAV_DB.prepare(countQuery).bind(...queryBindParams).first();
         total = countResult ? countResult.total : 0;
     }
 
@@ -103,7 +97,7 @@ export async function onRequestPost(context) {
 
   try {
     const config = await request.json();
-    const { name, url, logo, desc, catelogId, sort_order } = config;
+    const { name, url, logo, desc, catelogId, sort_order, is_private } = config;
     const iconAPI=env.ICON_API ||'https://favicon.im/';
     
     const sanitizedName = (name || '').trim();
@@ -111,6 +105,7 @@ export async function onRequestPost(context) {
     let sanitizedLogo = (logo || '').trim() || null;
     const sanitizedDesc = (desc || '').trim() || null;
     const sortOrderValue = normalizeSortOrder(sort_order);
+    const isPrivateValue = is_private ? 1 : 0;
 
     if (!sanitizedName || !sanitizedUrl || !catelogId) {
       return errorResponse('Name, URL and Catelog are required', 400);
@@ -132,9 +127,9 @@ export async function onRequestPost(context) {
       return errorResponse(`Category not found.`, 400);
     }
     const insert = await env.NAV_DB.prepare(`
-      INSERT INTO sites (name, url, logo, desc, catelog_id, sort_order)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, catelogId, sortOrderValue).run();
+      INSERT INTO sites (name, url, logo, desc, catelog_id, sort_order, is_private)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, catelogId, sortOrderValue, isPrivateValue).run();
 
     return jsonResponse({
       code: 201,

@@ -158,6 +158,9 @@ if (editBookmarkForm) {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
+    
+    // 显式处理复选框
+    data.is_private = document.getElementById('editBookmarkIsPrivate').checked;
 
     fetch(`/api/config/${data.id}`, {
       method: 'PUT',
@@ -668,6 +671,7 @@ function handleEdit(id) {
           document.getElementById('editBookmarkDesc').value = configToEdit.desc;
           document.getElementById('editBookmarkCatelog').value = configToEdit.catelog_id;
           document.getElementById('editBookmarkSortOrder').value = configToEdit.sort_order;
+          document.getElementById('editBookmarkIsPrivate').checked = !!configToEdit.is_private;
           editBookmarkModal.style.display = 'block';
         })
 
@@ -1323,6 +1327,7 @@ if (addBookmarkForm) {
     const desc = document.getElementById('addBookmarkDesc').value;
     const catelogId = addBookmarkCatelogSelect.value;
     const sortOrder = document.getElementById('addBookmarkSortOrder').value;
+    const isPrivate = document.getElementById('addBookmarkIsPrivate').checked;
 
     if (!name || !url || !catelogId) {
       showModalMessage('addBookmarkModal', '名称, URL 和分类为必填项', 'error');
@@ -1334,7 +1339,8 @@ if (addBookmarkForm) {
       url: url.trim(),
       logo: logo.trim(),
       desc: desc.trim(),
-      catelogId: catelogId
+      catelogId: catelogId,
+      is_private: isPrivate
     };
 
     if (sortOrder !== '') {

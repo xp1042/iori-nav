@@ -887,8 +887,10 @@ tr:nth-child(even) {
 .switch {
   position: relative;
   display: inline-block;
-  width: 48px;
+  width: 48px !important; /* Force width to override form-group label styles */
   height: 24px;
+  margin: 0 !important; /* Reset margin */
+  min-width: 48px; /* Prevent shrinking */
 }
 
 .switch input { 
