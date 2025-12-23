@@ -164,12 +164,58 @@ if (importFile) {
       reader.onload = function (event) {
         try {
           const data = JSON.parse(event.target.result);
+          let previewData = { category: [], sites: [] };
 
-          // 简单确认后直接导入
-          if (confirm('确定要导入这个 JSON 文件中的书签吗？')) {
-            performImport(data);
+          if (Array.isArray(data)) {
+              // Old format: Array of sites
+              // Convert to New Format Structure for consistent preview and backend handling
+              previewData.sites = data;
+              
+              const catMap = new Map();
+              let tempId = 10000; // Start high to avoid potential conflicts visually, though arbitrary
+              
+              // 1. Extract unique categories
+              data.forEach(site => {
+                  const catName = (site.catelog || '默认分类').trim();
+                  if (!catMap.has(catName)) {
+                      catMap.set(catName, {
+                          id: tempId++,
+                          catelog: catName,
+                          parent_id: 0,
+                          sort_order: 9999
+                      });
+                  }
+              });
+              
+              previewData.category = Array.from(catMap.values());
+              
+              // 2. Map sites to these temporary category IDs
+              previewData.sites = data.map(site => {
+                  const catName = (site.catelog || '默认分类').trim();
+                  return {
+                      ...site,
+                      catelog_id: catMap.get(catName).id
+                  };
+              });
+              
+          } else if (data.category && data.sites) {
+              // New format
+              previewData = data;
+              // Normalize parent_id to 0 if null, and ensure numbers
+              previewData.category = previewData.category.map(c => ({
+                  ...c,
+                  id: Number(c.id),
+                  parent_id: c.parent_id ? Number(c.parent_id) : 0
+              }));
+              previewData.sites = previewData.sites.map(s => ({
+                  ...s,
+                  catelog_id: Number(s.catelog_id)
+              }));
           }
+
+          showImportPreview(previewData);
         } catch (error) {
+          console.error(error);
           showMessage('JSON 文件解析失败: ' + error.message, 'error');
         }
       };
@@ -184,10 +230,52 @@ if (importFile) {
 }
 
 // 导出按钮事件
+const exportModal = document.getElementById('exportModal');
+const closeExportModal = document.getElementById('closeExportModal');
+const cancelExportBtn = document.getElementById('cancelExportBtn');
+const confirmExportBtn = document.getElementById('confirmExportBtn');
+const exportIncludePrivate = document.getElementById('exportIncludePrivate');
+
 if (exportBtn) {
   exportBtn.addEventListener('click', () => {
-    fetch('/api/config/export')
-      .then(res => res.blob())
+    // Reset state every time
+    if (exportIncludePrivate) exportIncludePrivate.checked = false;
+    if (exportModal) exportModal.style.display = 'block';
+  });
+}
+
+if (closeExportModal) {
+    closeExportModal.addEventListener('click', () => {
+        exportModal.style.display = 'none';
+    });
+}
+
+if (cancelExportBtn) {
+    cancelExportBtn.addEventListener('click', () => {
+        exportModal.style.display = 'none';
+    });
+}
+
+if (exportModal) {
+    exportModal.addEventListener('click', (e) => {
+        if (e.target === exportModal) {
+            exportModal.style.display = 'none';
+        }
+    });
+}
+
+if (confirmExportBtn) {
+  confirmExportBtn.addEventListener('click', () => {
+    const includePrivate = exportIncludePrivate ? exportIncludePrivate.checked : false;
+    const url = `/api/config/export?include_private=${includePrivate}`;
+    
+    showMessage('正在生成导出文件...', 'info');
+    
+    fetch(url)
+      .then(res => {
+          if (!res.ok) throw new Error('Export failed');
+          return res.blob();
+      })
       .then(blob => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -197,8 +285,11 @@ if (exportBtn) {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+        showMessage('导出成功', 'success');
+        exportModal.style.display = 'none';
       }).catch(err => {
-        showMessage('网络错误', 'error');
+        showMessage('导出失败: ' + err.message, 'error');
+        exportModal.style.display = 'none';
       });
   });
 }
@@ -369,10 +460,17 @@ function showImportPreview(result) {
         <p style="margin-top: 15px; color: #6c757d; font-size: 0.9rem;">
           注意: 将按照层级结构导入。若分类已存在（名称和父级匹配），将合并。
         </p>
+        <div style="margin-top: 15px; display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+            <label for="importOverride" style="font-size: 0.9rem; color: #333; cursor: pointer; font-weight: 500;">覆盖已存在书签 (根据 URL 判断)</label>
+            <label class="switch">
+                <input type="checkbox" id="importOverride">
+                <span class="slider round"></span>
+            </label>
+        </div>
       </div>
-      <div style="display: flex; gap: 10px; justify-content: flex-end;">
-        <button id="cancelImport" class="button-tertiary" style="background-color: #f3f4f6; color: #4b5563;">取消</button>
-        <button id="confirmImport" class="button-primary" style="background-color: #4f46e5; color: white;">确认导入</button>
+      <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+        <button id="cancelImport" class="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">取消</button>
+        <button id="confirmImport" class="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium shadow-sm">确认导入</button>
       </div>
     </div>
   `;
@@ -388,8 +486,9 @@ function showImportPreview(result) {
   });
 
   document.getElementById('confirmImport').addEventListener('click', () => {
+    const override = document.getElementById('importOverride').checked;
     document.body.removeChild(previewModal);
-    performImport(result);
+    performImport(result, override);
   });
   
    previewModal.addEventListener('click', (e) => {
@@ -400,15 +499,20 @@ function showImportPreview(result) {
 }
 
 // 执行导入
-function performImport(dataToImport) {
+function performImport(dataToImport, override = false) {
   showMessage('正在导入,请稍候...', 'info');
+
+  const payload = {
+      ...dataToImport,
+      override: override
+  };
 
   fetch('/api/config/import', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(dataToImport)
+    body: JSON.stringify(payload)
   }).then(res => res.json())
     .then(data => {
       if (data.code === 201 || data.code === 200) {
@@ -942,8 +1046,11 @@ function renderConfig(configs) {
     const displayUrl = config.url ? escapeHTML(config.url) : '未提供';
     const normalizedLogo = normalizeUrl(config.logo);
     const descCell = config.desc ? escapeHTML(config.desc) : '暂无描述';
-    const safeCatalog = escapeHTML(config.catelog || '未分类');
+    const safeCatalog = escapeHTML(config.catelog_name || '未分类');
     const cardInitial = (safeName.charAt(0) || '站').toUpperCase();
+    
+    // Private Icon
+    const privateIcon = config.is_private ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 ml-1 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="私密书签"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>` : '';
 
     // Added cursor-pointer
     card.className = 'site-card group bg-white border border-primary-100/60 rounded-xl shadow-sm overflow-hidden relative cursor-pointer';
@@ -988,7 +1095,10 @@ function renderConfig(configs) {
                   ${logoHtml}
                </div>
                <div class="flex-1 min-w-0">
-                  <h3 class="site-title text-base font-medium text-gray-900 truncate" title="${safeName}">${safeName}</h3>
+                  <div class="flex items-center">
+                      <h3 class="site-title text-base font-medium text-gray-900 truncate" title="${safeName}">${safeName}</h3>
+                      ${privateIcon}
+                  </div>
                   <span class="inline-flex items-center px-2 py-0.5 mt-1 rounded-full text-xs font-medium bg-secondary-100 text-primary-700">
                     ${safeCatalog}
                   </span>
@@ -1054,9 +1164,41 @@ function handleEdit(id) {
   if (editModal) editModal.style.display = 'block';
 }
 
+// 删除确认模态框逻辑
+let deleteTargetId = null;
+const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+const closeDeleteConfirmModal = document.getElementById('closeDeleteConfirmModal');
+const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+if (closeDeleteConfirmModal) closeDeleteConfirmModal.onclick = () => deleteConfirmModal.style.display = 'none';
+if (cancelDeleteBtn) cancelDeleteBtn.onclick = () => deleteConfirmModal.style.display = 'none';
+if (deleteConfirmModal) {
+    deleteConfirmModal.onclick = (e) => {
+        if (e.target === deleteConfirmModal) deleteConfirmModal.style.display = 'none';
+    };
+}
+
+if (confirmDeleteBtn) {
+    confirmDeleteBtn.onclick = () => {
+        if (deleteTargetId) {
+            performDelete(deleteTargetId);
+            deleteConfirmModal.style.display = 'none';
+        }
+    };
+}
+
 function handleDelete(id) {
-  if (!confirm('确定删除该书签吗？')) return;
-  
+  deleteTargetId = id;
+  if (deleteConfirmModal) {
+      deleteConfirmModal.style.display = 'block';
+  } else if (confirm('确定删除该书签吗？')) {
+      // Fallback if modal missing
+      performDelete(id);
+  }
+}
+
+function performDelete(id) {
   fetch(`/api/config/${id}`, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' }
@@ -1270,6 +1412,9 @@ function renderCategoryCards(categories) {
     const sortValue = item.sort_order === null || item.sort_order === 9999 ? '默认' : item.sort_order;
     const subCount = item.children ? item.children.length : 0;
 
+    // Private Icon
+    const privateIcon = item.is_private ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" title="私密分类"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>` : '';
+
     card.className = 'site-card group bg-white border border-primary-100/60 rounded-xl shadow-sm overflow-hidden relative cursor-move';
     card.draggable = true;
     card.dataset.id = item.id;
@@ -1291,8 +1436,11 @@ function renderCategoryCards(categories) {
 
       <div class="p-5">
         <div class="flex items-center justify-between mb-2">
-            <h3 class="text-lg font-medium text-gray-900 truncate" title="${safeName}">${safeName}</h3>
-            <span class="bg-primary-50 text-primary-700 text-xs px-2 py-1 rounded-full border border-primary-100">ID: ${item.id}</span>
+            <div class="flex items-center min-w-0">
+                 <h3 class="text-lg font-medium text-gray-900 truncate" title="${safeName}">${safeName}</h3>
+                 ${privateIcon}
+            </div>
+            <span class="bg-primary-50 text-primary-700 text-xs px-2 py-1 rounded-full border border-primary-100 flex-shrink-0 ml-2">ID: ${item.id}</span>
         </div>
         
         <div class="flex items-center text-sm text-gray-500 mt-4 space-x-4">
@@ -1341,6 +1489,7 @@ function bindCategoryEvents() {
         document.getElementById('editCategoryName').value = category.catelog;
         const sortOrder = category.sort_order;
         document.getElementById('editCategorySortOrder').value = (sortOrder === null || sortOrder === 9999) ? '' : sortOrder;
+        document.getElementById('editCategoryIsPrivate').checked = !!category.is_private;
         
         createCascadingDropdown('editCategoryParentWrapper', 'editCategoryParent', categoriesTree, category.parent_id || '0', category.id);
 
@@ -1553,6 +1702,7 @@ if (editCategoryForm) {
     const categoryName = document.getElementById('editCategoryName').value.trim();
     const sortOrder = document.getElementById('editCategorySortOrder').value.trim();
     const parentId = document.getElementById('editCategoryParent').value;
+    const isPrivate = document.getElementById('editCategoryIsPrivate').checked;
 
     if (!categoryName) {
       showMessage('分类名称不能为空', 'error');
@@ -1568,7 +1718,8 @@ if (editCategoryForm) {
 
     const payload = {
       catelog: categoryName,
-      parent_id: parentId
+      parent_id: parentId,
+      is_private: isPrivate
     };
 
     if (sortOrder !== '') {
@@ -1604,6 +1755,7 @@ if (addCategoryForm) {
     const categoryName = document.getElementById('newCategoryName').value.trim();
     const sortOrder = document.getElementById('newCategorySortOrder').value.trim();
     const parentId = document.getElementById('newCategoryParent').value;
+    const isPrivate = document.getElementById('newCategoryIsPrivate').checked;
 
     if (!categoryName) {
       showMessage('分类名称不能为空', 'error');
@@ -1612,7 +1764,8 @@ if (addCategoryForm) {
 
     const payload = {
       catelog: categoryName,
-      parent_id: parentId
+      parent_id: parentId,
+      is_private: isPrivate
     };
 
     if (sortOrder !== '') {
@@ -2486,7 +2639,21 @@ const initSettings = () => {
 
   saveBtn.addEventListener('click', () => {
     // Update state from inputs
-    currentSettings.apiKey = apiKeyInput.value.trim();
+    const newApiKey = apiKeyInput.value.trim();
+    if (newApiKey) {
+        currentSettings.apiKey = newApiKey;
+    } else if (currentSettings.has_api_key) {
+        // User didn't type anything but we have a key, so don't send anything (undefined)
+        // allowing backend to keep existing value if we filter it, 
+        // OR we just don't update the property in currentSettings if it was undefined.
+        // But loadSettings sets currentSettings.apiKey = undefined.
+        // So just delete it to be safe, ensuring it's not sent as ""
+        delete currentSettings.apiKey;
+    } else {
+        // No key previously, and input is empty -> clear it
+        currentSettings.apiKey = '';
+    }
+
     currentSettings.baseUrl = baseUrlInput.value.trim();
     currentSettings.model = modelNameInput.value.trim();
     currentSettings.layout_hide_desc = hideDescSwitch.checked;
@@ -2518,6 +2685,10 @@ const initSettings = () => {
 
     currentSettings.home_site_name = homeSiteNameInput.value.trim();
     currentSettings.home_site_description = homeSiteDescriptionInput.value.trim();
+    
+    if (homeDefaultCategorySelect) {
+        currentSettings.home_default_category = homeDefaultCategorySelect.value;
+    }
 
     currentSettings.home_search_engine_enabled = searchEngineSwitch.checked;
 
@@ -2607,7 +2778,39 @@ const initSettings = () => {
 
   // --- Helper Functions ---
 
+  const homeDefaultCategorySelect = document.getElementById('homeDefaultCategory');
+
   async function loadSettings() {
+    // Ensure categories are loaded for the dropdown
+    if (categoriesTree.length === 0) {
+        try {
+            const res = await fetch('/api/categories?pageSize=9999');
+            const data = await res.json();
+            if (data.code === 200) {
+                categoriesData = data.data || [];
+                categoriesTree = buildCategoryTree(categoriesData);
+            }
+        } catch (e) { console.error('Failed to load categories for settings', e); }
+    }
+
+    if (homeDefaultCategorySelect) {
+        homeDefaultCategorySelect.innerHTML = '<option value="">默认 (全部)</option>';
+        
+        // Helper to flatten tree for simple select
+        const addOptions = (nodes, prefix = '') => {
+            nodes.forEach(node => {
+                const option = document.createElement('option');
+                option.value = node.catelog; // Store Name as value, because config uses name
+                option.textContent = prefix + node.catelog;
+                homeDefaultCategorySelect.appendChild(option);
+                if (node.children && node.children.length > 0) {
+                    addOptions(node.children, prefix + '-- ');
+                }
+            });
+        };
+        addOptions(categoriesTree);
+    }
+
     try {
         // 1. Try to fetch from server (new source of truth)
         const res = await fetch('/api/settings');
@@ -2618,7 +2821,12 @@ const initSettings = () => {
             
             // Map known keys
             if (serverSettings.provider) currentSettings.provider = serverSettings.provider;
-            if (serverSettings.apiKey) currentSettings.apiKey = serverSettings.apiKey;
+            
+            // Handle API Key securely
+            currentSettings.has_api_key = !!serverSettings.has_api_key;
+            
+            if (serverSettings.apiKey) currentSettings.apiKey = serverSettings.apiKey; // Should be undefined now
+            
             if (serverSettings.baseUrl) currentSettings.baseUrl = serverSettings.baseUrl;
             if (serverSettings.model) currentSettings.model = serverSettings.model;
             
@@ -2653,6 +2861,8 @@ const initSettings = () => {
             if (serverSettings.home_site_description) currentSettings.home_site_description = serverSettings.home_site_description;
 
             if (serverSettings.home_search_engine_enabled !== undefined) currentSettings.home_search_engine_enabled = serverSettings.home_search_engine_enabled === 'true';
+            
+            if (serverSettings.home_default_category) currentSettings.home_default_category = serverSettings.home_default_category;
 
             if (serverSettings.layout_enable_frosted_glass !== undefined) currentSettings.layout_enable_frosted_glass = serverSettings.layout_enable_frosted_glass === 'true';
             if (serverSettings.layout_frosted_glass_intensity) currentSettings.layout_frosted_glass_intensity = serverSettings.layout_frosted_glass_intensity;
@@ -2675,22 +2885,10 @@ const initSettings = () => {
             if (serverSettings.card_desc_size) currentSettings.card_desc_size = serverSettings.card_desc_size;
             if (serverSettings.card_desc_color) currentSettings.card_desc_color = serverSettings.card_desc_color;
 
-        } else {
-            // Fallback to localStorage if server has no data (migration)
-            const localConfig = localStorage.getItem('ai_settings');
-            if (localConfig) {
-                const parsed = JSON.parse(localConfig);
-                currentSettings = { ...currentSettings, ...parsed };
-            }
         }
     } catch (e) {
         console.error('Failed to load settings', e);
-        // Fallback to localStorage
-        const localConfig = localStorage.getItem('ai_settings');
-        if (localConfig) {
-            const parsed = JSON.parse(localConfig);
-            currentSettings = { ...currentSettings, ...parsed };
-        }
+        // Fallback removed: Server is the single source of truth.
     }
 
     updateUIFromSettings();
@@ -2738,7 +2936,15 @@ const initSettings = () => {
       providerSelector.value = currentSettings.provider || 'workers-ai';
     }
     const provider = currentSettings.provider || 'workers-ai';
+    
+    // API Key UI Logic
     apiKeyInput.value = currentSettings.apiKey || '';
+    if (currentSettings.has_api_key && !apiKeyInput.value) {
+        apiKeyInput.placeholder = '已配置 (如需修改请直接输入)';
+    } else {
+        apiKeyInput.placeholder = '请输入 API Key';
+    }
+
     baseUrlInput.value = currentSettings.baseUrl || '';
     
     // Legacy fix
@@ -2820,6 +3026,8 @@ const initSettings = () => {
 
     if (homeSiteNameInput) homeSiteNameInput.value = currentSettings.home_site_name || '';
     if (homeSiteDescriptionInput) homeSiteDescriptionInput.value = currentSettings.home_site_description || '';
+    
+    if (homeDefaultCategorySelect) homeDefaultCategorySelect.value = currentSettings.home_default_category || '';
 
     if (searchEngineSwitch) searchEngineSwitch.checked = !!currentSettings.home_search_engine_enabled;
 
@@ -2913,7 +3121,6 @@ const initSettings = () => {
   // --- AI Call Logic (Frontend) ---
   // Note: Pass currentSettings instead of trying to read from localStorage inside
   async function getAIDescription(aiConfig, bookmark, generateName = false) {
-    const { provider, apiKey, baseUrl, model } = aiConfig;
     const { name, url } = bookmark;
 
     let systemPrompt, userPrompt;
@@ -2925,77 +3132,33 @@ const initSettings = () => {
       userPrompt = `为以下书签生成一个简洁的中文描述（不超过30字）。请直接返回描述内容，不要包含"书签名称"、"描述"等前缀，也不要使用"标题: 描述"的格式。书签名称：'${name}'，链接：'${url}'`;
     }
 
-    let responseText = '';
-
     try {
-      if (provider === 'workers-ai') {
-        const response = await fetch('/api/ai-chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt }
-            ]
-          })
-        });
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Workers AI error: ${errorText}`);
-        }
-        const data = await response.json();
-        responseText = typeof data.data === 'string' ? data.data : (data.data.response || JSON.stringify(data.data));
+      // 始终通过后端 API 进行请求，后端会处理不同的 provider (Workers AI, Gemini, OpenAI)
+      const response = await fetch('/api/ai-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ]
+        })
+      });
 
-      } else if (provider === 'gemini') {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        const response = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: userPrompt }] }],
-            generationConfig: { temperature: 0.7 },
-          }),
-        });
-        if (!response.ok) {
-          const errorBody = await response.text();
-          throw new Error(`Gemini API error (${response.status}): ${errorBody}`);
-        }
-        const data = await response.json();
-        responseText = data.candidates[0].content.parts[0].text.trim();
-      } else if (provider === 'openai') {
-        const openaiUrl = `${baseUrl}/v1/chat/completions`;
-        const response = await fetch(openaiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt }
-            ],
-            temperature: 0.7,
-
-          }),
-        });
-        if (!response.ok) {
-          const errorBody = await response.text();
-          throw new Error(`OpenAI API error (${response.status}): ${errorBody}`);
-        }
-        const data = await response.json();
-        responseText = data.choices[0].message.content.trim();
-      } else {
-        throw new Error('Unsupported AI provider');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `AI 请求失败: ${response.status}`);
       }
+
+      const data = await response.json();
+      const responseText = data.data;
 
       if (generateName) {
         try {
           const jsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
           return JSON.parse(jsonStr);
         } catch (e) {
-          console.warn('JSON parse failed, returning raw text as description', e);
+          console.warn('JSON 解析失败，将原始文本作为描述返回', e);
           return { description: responseText, name: '' };
         }
       } else {
@@ -3003,7 +3166,7 @@ const initSettings = () => {
       }
 
     } catch (error) {
-      console.error('AI description generation failed:', error);
+      console.error('AI 描述生成失败:', error);
       throw error;
     }
   }
@@ -3014,12 +3177,8 @@ const initSettings = () => {
     currentSettings.baseUrl = baseUrlInput.value.trim();
     currentSettings.model = modelNameInput.value.trim();
 
-    // Validation
+    // Validation - Backend will validate API Key
     if (currentSettings.provider !== 'workers-ai') {
-      if (!currentSettings.apiKey || !currentSettings.model) {
-        showMessage('请先配置 API Key 和模型名称', 'error');
-        return;
-      }
       if (currentSettings.provider === 'openai' && !currentSettings.baseUrl) {
         showMessage('使用 OpenAI 兼容模式时，Base URL 是必填项', 'error');
         return;
@@ -3145,15 +3304,6 @@ const initSettings = () => {
       return;
     }
 
-    // Ensure config is loaded
-    loadSettings();
-
-    // Check if AI is configured (if not workers-ai, need key)
-    if (currentSettings.provider !== 'workers-ai' && !currentSettings.apiKey) {
-      showModalMessage(modalId, '请先在 AI 设置中配置 API Key', 'error');
-      return;
-    }
-
     // Loading State
     const originalContent = btn.innerHTML;
     btn.innerHTML = '<div class="ai-spinner"></div>';
@@ -3197,3 +3347,71 @@ initSettings();
 
 // Init Data
 fetchConfigs();
+
+// ==========================================
+// 私密分类与书签联动逻辑
+// ==========================================
+
+function setupBookmarkPrivacyLinkage(selectId, checkboxId) {
+    const select = document.getElementById(selectId);
+    const checkbox = document.getElementById(checkboxId);
+    
+    if (!select || !checkbox) return;
+    
+    const updatePrivacy = () => {
+        const catId = select.value;
+        const category = categoriesData.find(c => c.id == catId);
+        
+        // Find existing hint or create
+        const container = checkbox.closest('.form-group');
+        let hint = container.querySelector('.privacy-hint');
+        
+        if (category && category.is_private) {
+            checkbox.checked = true;
+            checkbox.disabled = true;
+            
+            if (!hint) {
+                hint = document.createElement('span');
+                hint.className = 'privacy-hint text-xs text-amber-600 ml-2 font-normal';
+                hint.innerText = '(所属分类私密，强制开启)';
+                const label = container.querySelector('label:first-child');
+                if (label) label.appendChild(hint);
+            }
+        } else {
+            checkbox.disabled = false;
+            if (hint) hint.remove();
+        }
+    };
+    
+    select.addEventListener('change', updatePrivacy);
+    
+    // Attach to element for external call
+    select.updatePrivacyState = updatePrivacy;
+}
+
+// 初始化监听器
+document.addEventListener('DOMContentLoaded', () => {
+   setupBookmarkPrivacyLinkage('addBookmarkCatelog', 'addBookmarkIsPrivate');
+   setupBookmarkPrivacyLinkage('editBookmarkCatelog', 'editBookmarkIsPrivate');
+});
+
+// 劫持 handleEdit 以触发检查
+const originalHandleEditFn = window.handleEdit;
+window.handleEdit = function(id) {
+    if (originalHandleEditFn) originalHandleEditFn(id);
+    setTimeout(() => {
+        const select = document.getElementById('editBookmarkCatelog');
+        if (select && select.updatePrivacyState) select.updatePrivacyState();
+    }, 100);
+};
+
+// 监听新增按钮点击
+const addBookmarkBtnRef = document.getElementById('addBookmarkBtn');
+if (addBookmarkBtnRef) {
+    addBookmarkBtnRef.addEventListener('click', () => {
+        setTimeout(() => {
+             const select = document.getElementById('addBookmarkCatelog');
+             if (select && select.updatePrivacyState) select.updatePrivacyState();
+        }, 100);
+    });
+}
